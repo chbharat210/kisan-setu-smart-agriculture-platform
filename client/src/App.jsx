@@ -8,7 +8,7 @@ import {
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
-import ForgotPassword from './pages/ForgotPassword.jsx';
+
 
 import Dashboard from './pages/Dashboard.jsx';
 import CropAdvisory from './pages/CropAdvisory.jsx';
@@ -33,11 +33,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Forgot Password */}
-      <Route
-        path="/forgot-password"
-        element={<ForgotPassword />}
-      />
+     
 
       {/* Protected dashboard pages */}
       <Route
