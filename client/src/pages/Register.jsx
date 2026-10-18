@@ -40,7 +40,7 @@ export default function Register() {
       setLoading(true);
 
       const response = await fetch(
-        'http://localhost:5001/api/auth/register',
+        'https://kisan-setu-smart-agriculture-platform.onrender.com/api/auth/register',
         {
           method: 'POST',
           headers: {
