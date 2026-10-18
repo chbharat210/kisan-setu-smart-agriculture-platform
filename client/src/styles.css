@@ -6571,3 +6571,26 @@ footer .brand {
   }
 
 }
+
+.dashboard-layout .dashboard-content {
+  margin-left: 340px;
+  width: calc(100% - 340px);
+  min-height: 100vh;
+  padding: 32px 38px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-layout .dashboard-content {
+    margin-left: 280px;
+    width: calc(100% - 280px);
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-layout .dashboard-content {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    padding: 24px;
+  }
+}
