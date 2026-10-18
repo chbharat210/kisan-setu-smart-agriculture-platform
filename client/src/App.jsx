@@ -1,3 +1,4 @@
+```jsx
 import {
   Routes,
   Route,
@@ -7,6 +8,7 @@ import {
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 
 import Dashboard from './pages/Dashboard';
 import CropAdvisory from './pages/CropAdvisory';
@@ -25,18 +27,16 @@ import './styles.css';
 function App() {
   return (
     <Routes>
-
       {/* PUBLIC PAGES */}
-
       <Route path="/" element={<Home />} />
-
       <Route path="/login" element={<Login />} />
-
       <Route path="/register" element={<Register />} />
-
+      <Route
+        path="/forgot-password"
+        element={<ForgotPassword />}
+      />
 
       {/* PROTECTED DASHBOARD AREA */}
-
       <Route
         element={
           <ProtectedRoute>
@@ -44,59 +44,24 @@ function App() {
           </ProtectedRoute>
         }
       >
-
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
-
-        <Route
-          path="/crop-advisory"
-          element={<CropAdvisory />}
-        />
-
-        <Route
-          path="/weather"
-          element={<Weather />}
-        />
-
-        <Route
-          path="/disease-detection"
-          element={<DiseaseDetection />}
-        />
-
-        <Route
-          path="/mandi-prices"
-          element={<MandiPrices />}
-        />
-
-        <Route
-          path="/government-schemes"
-          element={<GovernmentSchemes />}
-        />
-
-        <Route
-          path="/expert-advice"
-          element={<ExpertAdvice />}
-        />
-
-        <Route
-          path="/ai-assistant"
-          element={<AIAssistant />}
-        />
-
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/crop-advisory" element={<CropAdvisory />} />
+        <Route path="/weather" element={<Weather />} />
+        <Route path="/disease-detection" element={<DiseaseDetection />} />
+        <Route path="/mandi-prices" element={<MandiPrices />} />
+        <Route path="/government-schemes" element={<GovernmentSchemes />} />
+        <Route path="/expert-advice" element={<ExpertAdvice />} />
+        <Route path="/ai-assistant" element={<AIAssistant />} />
       </Route>
 
-
       {/* INVALID URL */}
-
       <Route
         path="*"
         element={<Navigate to="/" replace />}
       />
-
     </Routes>
   );
 }
 
 export default App;
+```
