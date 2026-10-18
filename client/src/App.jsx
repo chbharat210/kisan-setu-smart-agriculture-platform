@@ -1,27 +1,29 @@
+```jsx
 import {
   Routes,
   Route,
   Navigate
 } from 'react-router-dom';
 
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
+import Home from './pages/Home.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
 
-import Dashboard from './pages/Dashboard';
-import CropAdvisory from './pages/CropAdvisory';
-import Weather from './pages/Weather';
-import DiseaseDetection from './pages/DiseaseDetection';
-import MandiPrices from './pages/MandiPrices';
-import GovernmentSchemes from './pages/GovernmentSchemes';
-import ExpertAdvice from './pages/ExpertAdvice';
-import AIAssistant from './pages/AIAssistant';
+import Dashboard from './pages/Dashboard.jsx';
+import CropAdvisory from './pages/CropAdvisory.jsx';
+import Weather from './pages/Weather.jsx';
+import DiseaseDetection from './pages/DiseaseDetection.jsx';
+import MandiPrices from './pages/MandiPrices.jsx';
+import GovernmentSchemes from './pages/GovernmentSchemes.jsx';
+import ExpertAdvice from './pages/ExpertAdvice.jsx';
+import AIAssistant from './pages/AIAssistant.jsx';
 
-import ProtectedRoute from './ProtectedRoute';
-import DashboardLayout from './DashboardLayout';
+import ProtectedRoute from './ProtectedRoute.jsx';
+import DashboardLayout from './DashboardLayout.jsx';
 
 import './styles.css';
+```
 
 function App() {
   return (
