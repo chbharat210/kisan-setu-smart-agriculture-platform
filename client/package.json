@@ -1,4 +1,4 @@
-```json
+
 {
   "name": "kisan-setu-client",
   "private": true,
@@ -20,4 +20,4 @@
   },
   "devDependencies": {}
 }
-```
+
