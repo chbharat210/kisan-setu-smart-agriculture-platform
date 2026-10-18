@@ -1,4 +1,4 @@
-```jsx
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sprout } from 'lucide-react';
@@ -33,8 +33,14 @@ export default function Login() {
     try {
       setLoading(true);
 
+      const apiUrl = import.meta.env.VITE_API_URL;
+
+      if (!apiUrl) {
+        throw new Error('API URL is not configured.');
+      }
+
       const response = await fetch(
-        'https://kisan-setu-smart-agriculture-platform.onrender.com/api/auth/login',
+        `${apiUrl.replace(/\/+$/, '')}/api/auth/login`,
         {
           method: 'POST',
           headers: {
@@ -57,7 +63,12 @@ export default function Login() {
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
-      setError('Unable to connect to server. Please try again.');
+
+      setError(
+        error.message === 'API URL is not configured.'
+          ? 'Server configuration error. Please try again later.'
+          : 'Unable to connect to server. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -88,31 +99,39 @@ export default function Login() {
         )}
 
         <form onSubmit={handleSubmit}>
-          <label>Email</label>
+          <label htmlFor="email">Email</label>
 
           <input
+            id="email"
             type="email"
             name="email"
             placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
+            autoComplete="email"
+            required
           />
 
-          <label>Password</label>
+          <label htmlFor="password">Password</label>
 
           <input
+            id="password"
             type="password"
             name="password"
             placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
+            autoComplete="current-password"
+            required
           />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            margin: '8px 0 16px'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              margin: '8px 0 16px'
+            }}
+          >
             <Link to="/forgot-password">
               Forgot Password?
             </Link>
@@ -135,4 +154,3 @@ export default function Login() {
     </div>
   );
 }
-```

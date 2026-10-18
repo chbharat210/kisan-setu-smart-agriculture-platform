@@ -81,7 +81,7 @@ export default function AIAssistant() {
       }
 
       const response = await fetch(
-        'http://localhost:5001/api/ai/history',
+        `${import.meta.env.VITE_API_URL}/api/ai/history`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -199,7 +199,7 @@ export default function AIAssistant() {
       setTyping(true);
 
       const response = await fetch(
-        'http://localhost:5001/api/ai/chat',
+        `${import.meta.env.VITE_API_URL}/api/ai/chat`,
         {
           method: 'POST',
 
@@ -318,7 +318,7 @@ export default function AIAssistant() {
       setTyping(true);
 
       const response = await fetch(
-        'http://localhost:5001/api/ai/history',
+        `${import.meta.env.VITE_API_URL}/api/ai/history`,
         {
           method: 'DELETE',
 

@@ -96,7 +96,7 @@ export default function Dashboard() {
       const token = localStorage.getItem('token');
 
       const response = await fetch(
-        'http://localhost:5001/api/crops/my',
+        `${import.meta.env.VITE_API_URL}/api/crops/my`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -207,8 +207,8 @@ export default function Dashboard() {
       const token = localStorage.getItem('token');
 
       const url = editingCropId
-        ? `http://localhost:5001/api/crops/${editingCropId}`
-        : 'http://localhost:5001/api/crops';
+        ? `${import.meta.env.VITE_API_URL}/api/crops/${editingCropId}`
+        : `${import.meta.env.VITE_API_URL}/api/crops`;
 
       const method = editingCropId ? 'PUT' : 'POST';
 
@@ -261,7 +261,7 @@ export default function Dashboard() {
       const token = localStorage.getItem('token');
 
       const response = await fetch(
-        `http://localhost:5001/api/crops/${cropId}`,
+        `${import.meta.env.VITE_API_URL}/api/crops/${cropId}`,
         {
           method: 'DELETE',
           headers: {

@@ -13,7 +13,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5001/api/mandi';
+const API_URL = `${import.meta.env.VITE_API_URL}/api/mandi`;
 
 export default function MandiPrices() {
   const [mandiData, setMandiData] = useState([]);

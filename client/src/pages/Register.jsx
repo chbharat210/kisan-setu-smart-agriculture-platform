@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sprout } from 'lucide-react';
@@ -23,24 +24,29 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError('');
 
-    if (!formData.name || !formData.email || !formData.password) {
+    if (!formData.name.trim() || !formData.email || !formData.password) {
       setError('Please fill in all fields.');
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must contain at least 6 characters.');
+      setError('Password must be at least 6 characters long.');
       return;
     }
 
     try {
       setLoading(true);
 
+      const apiUrl = import.meta.env.VITE_API_URL;
+
+      if (!apiUrl) {
+        throw new Error('API URL is not configured.');
+      }
+
       const response = await fetch(
-        'https://kisan-setu-smart-agriculture-platform.onrender.com/api/auth/register',
+        `${apiUrl.replace(/\/+$/, '')}/api/auth/register`,
         {
           method: 'POST',
           headers: {
@@ -57,14 +63,22 @@ export default function Register() {
         return;
       }
 
-      alert('Registration successful! Please login.');
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
 
-      navigate('/login');
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
 
+      navigate(data.token ? '/dashboard' : '/login');
     } catch (error) {
       console.error('Registration error:', error);
+
       setError(
-        'Unable to connect to server. Please make sure the backend is running.'
+        error.message === 'API URL is not configured.'
+          ? 'Server configuration error. Please try again later.'
+          : 'Unable to connect to server. Please try again.'
       );
     } finally {
       setLoading(false);
@@ -74,7 +88,6 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-
         <div className="auth-logo">
           <div className="brand-mark">
             <Sprout size={22} />
@@ -89,45 +102,52 @@ export default function Register() {
         <h1>Create Account</h1>
 
         <p className="auth-subtitle">
-          Join Kisan Setu and access smart farming services.
+          Join Kisan Setu to access smart farming services.
         </p>
 
         {error && (
-          <div className="auth-error">
-            {error}
-          </div>
+          <div className="auth-error">{error}</div>
         )}
 
         <form onSubmit={handleSubmit}>
-
-          <label>Full Name</label>
+          <label htmlFor="name">Full Name</label>
 
           <input
+            id="name"
             type="text"
             name="name"
             placeholder="Enter your full name"
             value={formData.name}
             onChange={handleChange}
+            autoComplete="name"
+            required
           />
 
-          <label>Email</label>
+          <label htmlFor="email">Email</label>
 
           <input
+            id="email"
             type="email"
             name="email"
             placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
+            autoComplete="email"
+            required
           />
 
-          <label>Password</label>
+          <label htmlFor="password">Password</label>
 
           <input
+            id="password"
             type="password"
             name="password"
             placeholder="Create a password"
             value={formData.password}
             onChange={handleChange}
+            autoComplete="new-password"
+            minLength={6}
+            required
           />
 
           <button
@@ -137,14 +157,12 @@ export default function Register() {
           >
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
-
         </form>
 
         <p className="auth-footer">
           Already have an account?{' '}
           <Link to="/login">Login</Link>
         </p>
-
       </div>
     </div>
   );
