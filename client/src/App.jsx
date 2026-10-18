@@ -27,16 +27,18 @@ import './styles.css';
 function App() {
   return (
     <Routes>
-      {/* PUBLIC PAGES */}
+      {/* Public pages */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+
+      {/* Forgot Password */}
       <Route
         path="/forgot-password"
         element={<ForgotPassword />}
       />
 
-      {/* PROTECTED DASHBOARD AREA */}
+      {/* Protected dashboard pages */}
       <Route
         element={
           <ProtectedRoute>
@@ -44,17 +46,48 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/crop-advisory" element={<CropAdvisory />} />
-        <Route path="/weather" element={<Weather />} />
-        <Route path="/disease-detection" element={<DiseaseDetection />} />
-        <Route path="/mandi-prices" element={<MandiPrices />} />
-        <Route path="/government-schemes" element={<GovernmentSchemes />} />
-        <Route path="/expert-advice" element={<ExpertAdvice />} />
-        <Route path="/ai-assistant" element={<AIAssistant />} />
+        <Route
+          path="/dashboard"
+          element={<Dashboard />}
+        />
+
+        <Route
+          path="/crop-advisory"
+          element={<CropAdvisory />}
+        />
+
+        <Route
+          path="/weather"
+          element={<Weather />}
+        />
+
+        <Route
+          path="/disease-detection"
+          element={<DiseaseDetection />}
+        />
+
+        <Route
+          path="/mandi-prices"
+          element={<MandiPrices />}
+        />
+
+        <Route
+          path="/government-schemes"
+          element={<GovernmentSchemes />}
+        />
+
+        <Route
+          path="/expert-advice"
+          element={<ExpertAdvice />}
+        />
+
+        <Route
+          path="/ai-assistant"
+          element={<AIAssistant />}
+        />
       </Route>
 
-      {/* INVALID URL */}
+      {/* Invalid URL */}
       <Route
         path="*"
         element={<Navigate to="/" replace />}
