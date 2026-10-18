@@ -1,4 +1,3 @@
-```jsx
 import {
   Routes,
   Route,
@@ -97,4 +96,4 @@ function App() {
 }
 
 export default App;
-```
+
