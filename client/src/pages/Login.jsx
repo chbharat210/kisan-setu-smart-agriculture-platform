@@ -1,3 +1,4 @@
+```jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sprout } from 'lucide-react';
@@ -22,7 +23,6 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError('');
 
     if (!formData.email || !formData.password) {
@@ -51,19 +51,13 @@ export default function Login() {
         return;
       }
 
-      // Save authentication data
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      // Redirect to dashboard
       navigate('/dashboard');
-
     } catch (error) {
       console.error('Login error:', error);
-
-      setError(
-        'Unable to connect to server. Please make sure the backend is running.'
-      );
+      setError('Unable to connect to server. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -72,7 +66,6 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-
         <div className="auth-logo">
           <div className="brand-mark">
             <Sprout size={22} />
@@ -91,13 +84,10 @@ export default function Login() {
         </p>
 
         {error && (
-          <div className="auth-error">
-            {error}
-          </div>
+          <div className="auth-error">{error}</div>
         )}
 
         <form onSubmit={handleSubmit}>
-
           <label>Email</label>
 
           <input
@@ -118,6 +108,16 @@ export default function Login() {
             onChange={handleChange}
           />
 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            margin: '8px 0 16px'
+          }}>
+            <Link to="/forgot-password">
+              Forgot Password?
+            </Link>
+          </div>
+
           <button
             type="submit"
             className="btn btn-primary auth-btn"
@@ -125,15 +125,14 @@ export default function Login() {
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
-
         </form>
 
         <p className="auth-footer">
           Don't have an account?{' '}
           <Link to="/register">Create Account</Link>
         </p>
-
       </div>
     </div>
   );
 }
+```
