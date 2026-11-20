@@ -33,7 +33,7 @@ export default function Login() {
     try {
       setLoading(true);
 
-      const apiUrl = import.meta.env.VITE_API_URL;
+      const apiUrl = (import.meta.env.VITE_API_URL || '').replace(/^VITE_API_URL=/, '').trim();
 
       if (!apiUrl) {
         throw new Error('API URL is not configured.');
