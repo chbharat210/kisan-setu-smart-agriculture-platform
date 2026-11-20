@@ -28,7 +28,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // GET schemes by state
 router.get('/state/:state', authMiddleware, async (req, res) => {
   try {
-    const state = req.params.state;
+    const { state } = req.params;
 
     const schemes = await GovernmentScheme.find({
       active: true,
