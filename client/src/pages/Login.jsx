@@ -50,13 +50,23 @@ export default function Login() {
         }
       );
 
-      const data = await response.json();
+    const text = await response.text();
+let data = {};
+try {
+  data = text ? JSON.parse(text) : {};
+} catch {
+  data = {};
+}
 
-      if (!response.ok) {
-        setError(data.message || 'Login failed.');
-        return;
-      }
+if (!response.ok) {
+  setError(data.message || `Login failed (status ${response.status}).`);
+  return;
+}
 
+if (!data.token) {
+  setError(`Server replied with status ${response.status} but no login data.`);
+  return;
+}
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 

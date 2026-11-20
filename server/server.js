@@ -16,6 +16,11 @@ dotenv.config();
 
 const app = express();
 
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.originalUrl} from ${req.headers.origin || 'no-origin'}`);
+  next();
+});
+
 // CORS Configuration
 const allowedOrigins = [
   'http://localhost:5173',
