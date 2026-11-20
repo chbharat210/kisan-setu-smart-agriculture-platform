@@ -64,7 +64,7 @@ if (!response.ok) {
 }
 
 if (!data.token) {
-  setError(`Server replied with status ${response.status} but no login data.`);
+  setError(`Status ${response.status} from ${response.url} | ${text.slice(0, 80)}`);
   return;
 }
       localStorage.setItem('token', data.token);
