@@ -1,0 +1,97 @@
+
+name: Automatic Government Mandi Price Sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 14 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  sync-mandi-prices:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fetch and upload official mandi prices
+        env:
+          DATA_GOV_API_KEY: ${{ secrets.DATA_GOV_API_KEY }}
+          MANDI_SYNC_SECRET: ${{ secrets.MANDI_SYNC_SECRET }}
+        run: |
+          node --input-type=module <<'NODE'
+          const resourceId = '9ef84268-d588-465a-a308-a864a43d0070';
+          const apiKey = process.env.DATA_GOV_API_KEY;
+          const secret = process.env.MANDI_SYNC_SECRET;
+
+          const backend = 'https://kisan-setu-smart-agriculture-platform.onrender.com/api/mandi/sync-from-github';
+
+          if (!apiKey || !secret) {
+            throw new Error('Required GitHub secrets are missing.');
+          }
+
+          const limit = 1000;
+          let offset = 0;
+          let allRecords = [];
+
+          while (true) {
+            const url = new URL(
+              `https://api.data.gov.in/resource/${resourceId}`
+            );
+
+            url.searchParams.set('api-key', apiKey);
+            url.searchParams.set('format', 'json');
+            url.searchParams.set('limit', String(limit));
+            url.searchParams.set('offset', String(offset));
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+              throw new Error(`Government API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data.records)) {
+              throw new Error('Invalid government API response.');
+            }
+
+            allRecords.push(...data.records);
+
+            console.log(`Fetched ${allRecords.length} records`);
+
+            if (data.records.length < limit) break;
+
+            offset += data.records.length;
+          }
+
+          if (allRecords.length === 0) {
+            throw new Error('No government mandi records found.');
+          }
+
+          let uploaded = 0;
+
+          for (let i = 0; i < allRecords.length; i += 200) {
+            const batch = allRecords.slice(i, i + 200);
+
+            const response = await fetch(backend, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-mandi-sync-secret': secret
+              },
+              body: JSON.stringify({ records: batch })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              throw new Error(`Backend upload failed: ${response.status} - ${result.message}`);
+            }
+
+            uploaded += result.processed || 0;
+            console.log(`Uploaded batch: ${uploaded} records processed`);
+          }
+
+          console.log(`SUCCESS: ${uploaded} official records processed.`);
+          NODE
