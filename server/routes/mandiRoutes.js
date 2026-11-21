@@ -15,6 +15,7 @@ const parseMarketDate = (value) => {
 
   if (match) {
     const [, day, month, year] = match;
+
     const date = new Date(
       Date.UTC(Number(year), Number(month) - 1, Number(day))
     );
@@ -34,8 +35,43 @@ const parseMarketDate = (value) => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
+// Calculate trend using the previous recorded market price.
+const calculateTrend = async ({
+  crop,
+  market,
+  state,
+  variety,
+  modalPrice,
+  priceDate
+}) => {
+  const previousPrice = await MandiPrice.findOne({
+    crop,
+    market,
+    state,
+    variety,
+    priceDate: { $lt: priceDate }
+  })
+    .sort({ priceDate: -1 })
+    .select('modalPrice')
+    .lean();
+
+  if (!previousPrice) {
+    return 'stable';
+  }
+
+  if (modalPrice > previousPrice.modalPrice) {
+    return 'up';
+  }
+
+  if (modalPrice < previousPrice.modalPrice) {
+    return 'down';
+  }
+
+  return 'stable';
+};
+
 // Convert official government records into database operations.
-const buildOperations = (records) => {
+const buildOperations = async (records) => {
   const operations = [];
 
   for (const record of records) {
@@ -67,6 +103,15 @@ const buildOperations = (records) => {
 
     const variety = record.variety?.trim() || 'Common';
 
+    const trend = await calculateTrend({
+      crop,
+      market,
+      state,
+      variety,
+      modalPrice,
+      priceDate
+    });
+
     operations.push({
       updateOne: {
         filter: {
@@ -86,6 +131,7 @@ const buildOperations = (records) => {
             maxPrice,
             modalPrice,
             unit: '₹/Quintal',
+            trend,
             priceDate
           }
         },
@@ -99,7 +145,7 @@ const buildOperations = (records) => {
 
 // Save official government records into MongoDB.
 const saveMandiRecords = async (records) => {
-  const operations = buildOperations(records);
+  const operations = await buildOperations(records);
 
   if (operations.length === 0) {
     return {
@@ -188,7 +234,7 @@ router.post('/sync', authMiddleware, async (req, res) => {
   }
 });
 
-// RECEIVE official records from GitHub Actions
+// RECEIVE official records from Mac sync script or GitHub Actions
 router.post('/sync-from-github', async (req, res) => {
   try {
     const secret = process.env.MANDI_SYNC_SECRET;
@@ -215,7 +261,7 @@ router.post('/sync-from-github', async (req, res) => {
       ...result
     });
   } catch (error) {
-    console.error('GitHub mandi sync error:', error);
+    console.error('Mandi upload error:', error);
 
     res.status(500).json({
       message: 'Mandi upload failed.'
@@ -267,7 +313,6 @@ router.post('/', authMiddleware, async (req, res) => {
       maxPrice,
       modalPrice,
       unit,
-      trend,
       priceDate
     } = req.body;
 
@@ -284,17 +329,32 @@ router.post('/', authMiddleware, async (req, res) => {
       });
     }
 
+    const cleanCrop = crop.trim();
+    const cleanMarket = market.trim();
+    const cleanState = state.trim();
+    const cleanVariety = variety?.trim() || 'Common';
+    const cleanPriceDate = priceDate || new Date();
+
+    const trend = await calculateTrend({
+      crop: cleanCrop,
+      market: cleanMarket,
+      state: cleanState,
+      variety: cleanVariety,
+      modalPrice: Number(modalPrice),
+      priceDate: new Date(cleanPriceDate)
+    });
+
     const mandiPrice = await MandiPrice.create({
-      crop: crop.trim(),
-      market: market.trim(),
-      state: state.trim(),
-      variety: variety || 'Common',
+      crop: cleanCrop,
+      market: cleanMarket,
+      state: cleanState,
+      variety: cleanVariety,
       minPrice,
       maxPrice,
       modalPrice,
       unit: unit || '₹/Quintal',
-      trend: trend || 'stable',
-      priceDate: priceDate || new Date()
+      trend,
+      priceDate: cleanPriceDate
     });
 
     res.status(201).json({
