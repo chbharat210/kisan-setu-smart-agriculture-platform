@@ -1,9 +1,34 @@
-import express from 'express';
 
+import express from 'express';
 import MandiPrice from '../models/MandiPrice.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+const RESOURCE_ID = '9ef84268-d588-465a-a308-a864a43d0070';
+
+// Parse government arrival date (DD/MM/YYYY)
+const parseMarketDate = (value) => {
+  if (!value) return null;
+
+  const match = String(value).match(
+    /^(\d{2})\/(\d{2})\/(\d{4})$/
+  );
+
+  if (match) {
+    const [, day, month, year] = match;
+
+    return new Date(Date.UTC(
+      Number(year),
+      Number(month) - 1,
+      Number(day)
+    ));
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+};
 
 
 // GET all mandi prices
@@ -13,12 +38,140 @@ router.get('/', authMiddleware, async (req, res) => {
       .sort({ priceDate: -1 });
 
     res.json(prices);
-
   } catch (error) {
     console.error('Get mandi prices error:', error);
 
     res.status(500).json({
       message: 'Failed to fetch mandi prices.'
+    });
+  }
+});
+
+
+// SYNC official government mandi prices
+router.post('/sync', authMiddleware, async (req, res) => {
+  try {
+    const apiKey = process.env.DATA_GOV_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        message: 'DATA_GOV_API_KEY is missing.'
+      });
+    }
+
+    const url = new URL(
+      `https://api.data.gov.in/resource/${RESOURCE_ID}`
+    );
+
+    url.searchParams.set('api-key', apiKey);
+    url.searchParams.set('format', 'json');
+    url.searchParams.set('limit', '1000');
+    url.searchParams.set('offset', '0');
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error('Government API status:', response.status);
+
+      return res.status(502).json({
+        message: 'Government mandi API request failed.',
+        status: response.status
+      });
+    }
+
+    const payload = await response.json();
+
+    if (!Array.isArray(payload.records)) {
+      console.error('Invalid government API response:', payload);
+
+      return res.status(502).json({
+        message: 'Invalid response from government mandi API.'
+      });
+    }
+
+    const operations = [];
+
+    for (const record of payload.records) {
+      const crop = record.commodity?.trim();
+      const market = record.market?.trim();
+      const state = record.state?.trim();
+      const variety = record.variety?.trim() || 'Common';
+
+      const minPrice = Number(record.min_price);
+      const maxPrice = Number(record.max_price);
+      const modalPrice = Number(record.modal_price);
+
+      const priceDate = parseMarketDate(record.arrival_date);
+
+      if (
+        !crop ||
+        !market ||
+        !state ||
+        !priceDate ||
+        !Number.isFinite(minPrice) ||
+        !Number.isFinite(maxPrice) ||
+        !Number.isFinite(modalPrice) ||
+        minPrice < 0 ||
+        maxPrice < minPrice ||
+        modalPrice < minPrice ||
+        modalPrice > maxPrice
+      ) {
+        continue;
+      }
+
+      operations.push({
+        updateOne: {
+          filter: {
+            crop,
+            market,
+            state,
+            variety,
+            priceDate
+          },
+          update: {
+            $set: {
+              crop,
+              market,
+              state,
+              variety,
+              minPrice,
+              maxPrice,
+              modalPrice,
+              unit: '₹/Quintal',
+              priceDate
+            }
+          },
+          upsert: true
+        }
+      });
+    }
+
+    if (operations.length === 0) {
+      return res.json({
+        message: 'No valid mandi records found.',
+        received: payload.records.length,
+        imported: 0
+      });
+    }
+
+    const result = await MandiPrice.bulkWrite(
+      operations,
+      { ordered: false }
+    );
+
+    res.json({
+      message: 'Government mandi data sync completed.',
+      received: payload.records.length,
+      processed: operations.length,
+      inserted: result.upsertedCount,
+      updated: result.modifiedCount
+    });
+
+  } catch (error) {
+    console.error('Mandi sync error:', error);
+
+    res.status(500).json({
+      message: 'Failed to sync government mandi prices.'
     });
   }
 });
@@ -35,7 +188,6 @@ router.get('/crop/:crop', authMiddleware, async (req, res) => {
     }).sort({ priceDate: -1 });
 
     res.json(prices);
-
   } catch (error) {
     console.error('Crop mandi prices error:', error);
 
@@ -57,7 +209,6 @@ router.get('/state/:state', authMiddleware, async (req, res) => {
     }).sort({ priceDate: -1 });
 
     res.json(prices);
-
   } catch (error) {
     console.error('State mandi prices error:', error);
 
@@ -114,7 +265,6 @@ router.post('/', authMiddleware, async (req, res) => {
       message: 'Mandi price added successfully.',
       price: mandiPrice
     });
-
   } catch (error) {
     console.error('Add mandi price error:', error);
 
@@ -141,7 +291,6 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     res.json({
       message: 'Mandi price deleted successfully.'
     });
-
   } catch (error) {
     console.error('Delete mandi price error:', error);
 
@@ -150,6 +299,5 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     });
   }
 });
-
 
 export default router;
